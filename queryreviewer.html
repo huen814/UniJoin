@@ -16,25 +16,38 @@
 <div class="topbar">
   <div>
     <h1>Registrar Division - Records Query Console</h1>
-    <div class="sub">University Enrollment System · Live SQL Test Cases for Reviewing Information Management 2</div>
+    <div class="sub">University Enrollment System · Live SQL Test Cases</div>
+    <div class="sub"> Created to help review on Information Management II </div>
     <div id="dbStatus">Booting university database…</div>
   </div>
   <div class="scoreBadge">SCORE<b id="scoreVal">0 / 100</b></div>
 </div>
 
-<div class="layout">
-  <div id="caseList"></div>
+<div class="tabbar">
+  <button class="tab-btn active" id="tab-cases" onclick="showView('cases')">TEST CASES</button>
+  <button class="tab-btn" id="tab-schema" onclick="showView('schema')">DATABASE SCHEMA</button>
+</div>
 
-  <div class="console">
-    <h3>QUERY</h3>
-    <div id="queryPanel"><p class="placeholder">Run a test case to see your query here.</p></div>
+<div id="view-cases" class="view">
+  <div class="layout">
+    <div id="caseList"></div>
 
-    <h3>YOUR OUTPUT</h3>
-    <div id="yourOutputPanel"><p class="placeholder">Nothing checked yet.</p></div>
+    <div class="console">
+      <h3>QUERY</h3>
+      <div id="queryPanel"><p class="placeholder">Run a test case to see your query here.</p></div>
 
-    <h3>EXPECTED OUTPUT</h3>
-    <div id="expectedPanel"><p class="placeholder">Nothing checked yet.</p></div>
+      <h3>YOUR OUTPUT</h3>
+      <div id="yourOutputPanel"><p class="placeholder">Nothing checked yet.</p></div>
+
+      <h3>EXPECTED OUTPUT</h3>
+      <div id="expectedPanel"><p class="placeholder">Nothing checked yet.</p></div>
+    </div>
   </div>
+</div>
+
+<div id="view-schema" class="view hidden">
+  <div class="schema-intro">Reference the tables and columns below while you write your queries. Each table shows its columns, keys, and a short preview of its data.</div>
+  <div id="schemaWrap"><p class="placeholder">Waiting for the database to finish loading…</p></div>
 </div>
 
 <div class="footer-note">20 test cases · 5 points each · every table lives in an in-browser SQLite database built from the university's actual academic records schema</div>
