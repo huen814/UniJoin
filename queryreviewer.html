@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Registrar Division — Records Query Console</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>Registrar Division - Records Query Console</h1>
+    <div class="sub">University Enrollment System · Live SQL Test Cases for Reviewing Information Management 2</div>
+    <div id="dbStatus">Booting university database…</div>
+  </div>
+  <div class="scoreBadge">SCORE<b id="scoreVal">0 / 100</b></div>
+</div>
+
+<div class="layout">
+  <div id="caseList"></div>
+
+  <div class="console">
+    <h3>QUERY</h3>
+    <div id="queryPanel"><p class="placeholder">Run a test case to see your query here.</p></div>
+
+    <h3>YOUR OUTPUT</h3>
+    <div id="yourOutputPanel"><p class="placeholder">Nothing checked yet.</p></div>
+
+    <h3>EXPECTED OUTPUT</h3>
+    <div id="expectedPanel"><p class="placeholder">Nothing checked yet.</p></div>
+  </div>
+</div>
+
+<div class="footer-note">20 test cases · 5 points each · every table lives in an in-browser SQLite database built from the university's actual academic records schema</div>
+
+<script src="script.js" defer></script>
+</body>
+</html>
