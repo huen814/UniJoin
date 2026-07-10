@@ -451,6 +451,92 @@ function updateScore(){
   document.getElementById('scoreVal').textContent = score + ' / 100';
 }
 
+function showView(name){
+  const isCases = name === 'cases';
+  document.getElementById('view-cases').classList.toggle('hidden', !isCases);
+  document.getElementById('view-schema').classList.toggle('hidden', isCases);
+  document.getElementById('tab-cases').classList.toggle('active', isCases);
+  document.getElementById('tab-schema').classList.toggle('active', !isCases);
+  try { localStorage.setItem('activeView', name); } catch(e){}
+}
+
+function renderSchemaTable(columns, rows){
+  if(rows.length === 0){
+    return '<p class="placeholder">(no rows yet)</p>';
+  }
+  let html = '<div class="sample-scroll"><table class="sampleTbl"><thead><tr>';
+  columns.forEach(c => html += `<th>${esc(c)}</th>`);
+  html += '</tr></thead><tbody>';
+  rows.forEach(row => {
+    html += '<tr>';
+    row.forEach(v => {
+      if(v === null || v === undefined){
+        html += '<td class="nullval">NULL</td>';
+      } else {
+        html += `<td>${esc(v)}</td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function buildSchemaView(){
+  const wrap = document.getElementById('schemaWrap');
+  try {
+    const tableRows = db.exec("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;");
+    const tableNames = tableRows.length ? tableRows[0].values.map(r => r[0]) : [];
+
+    wrap.innerHTML = tableNames.map(tname => {
+      const colInfo = db.exec(`PRAGMA table_info(${tname});`);
+      const fkInfo = db.exec(`PRAGMA foreign_key_list(${tname});`);
+      const countRes = db.exec(`SELECT COUNT(*) FROM ${tname};`);
+      const rowCount = countRes.length ? countRes[0].values[0][0] : 0;
+
+      const fkMap = {};
+      if(fkInfo.length){
+        fkInfo[0].values.forEach(fk => {
+          const cols = fkInfo[0].columns;
+          const fromCol = fk[cols.indexOf('from')];
+          const toTable = fk[cols.indexOf('table')];
+          const toCol = fk[cols.indexOf('to')];
+          fkMap[fromCol] = `${toTable}.${toCol}`;
+        });
+      }
+
+      const cols = colInfo.length ? colInfo[0].values : [];
+      const colHtml = cols.map(c => {
+        const [, name, type, , , pk] = c;
+        const badges = [];
+        if(pk) badges.push('<span class="key-badge pk">PK</span>');
+        if(fkMap[name]) badges.push(`<span class="key-badge fk">FK → ${esc(fkMap[name])}</span>`);
+        return `<tr><td>${esc(name)}</td><td>${esc(type)}</td><td>${badges.join(' ')}</td></tr>`;
+      }).join('');
+
+      const sample = db.exec(`SELECT * FROM ${tname} LIMIT 5;`);
+      const sampleHtml = sample.length
+        ? renderSchemaTable(sample[0].columns, sample[0].values)
+        : '<p class="placeholder">(no rows yet)</p>';
+
+      return `
+        <div class="schema-table-card">
+          <h4>${esc(tname)}</h4>
+          <div class="rowcount">${rowCount} row${rowCount === 1 ? '' : 's'}</div>
+          <table class="schemaTbl">
+            <thead><tr><th>Column</th><th>Type</th><th>Keys</th></tr></thead>
+            <tbody>${colHtml}</tbody>
+          </table>
+          <div class="schema-sample-label">SAMPLE ROWS</div>
+          ${sampleHtml}
+        </div>
+      `;
+    }).join('');
+  } catch(err){
+    wrap.innerHTML = `<div class="errBox">Could not read database schema: ${esc(err.message)}</div>`;
+  }
+}
+
 function checkCase(idx){
   const tc = TEST_CASES[idx];
   const sql = document.getElementById('sql-'+idx).value;
@@ -511,6 +597,7 @@ function boot(){
       statusEl.textContent = 'University database loaded — 10 tables, ready for query.';
       statusEl.className = 'ready';
       document.querySelectorAll('.btn-check').forEach(b => b.disabled = false);
+      buildSchemaView();
     } catch(err){
       const statusEl = document.getElementById('dbStatus');
       statusEl.textContent = 'Failed to load university database: ' + err.message;
@@ -525,3 +612,8 @@ function boot(){
 
 buildCaseList();
 boot();
+
+try {
+  const savedView = localStorage.getItem('activeView');
+  if(savedView === 'schema'){ showView('schema'); }
+} catch(e){}
