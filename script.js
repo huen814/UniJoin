@@ -1038,11 +1038,32 @@ function initScratchGutter(){
   });
 }
 
+function syncStickyOffsets(){
+  const topbar = document.querySelector('.topbar');
+  const tabbar = document.querySelector('.tabbar');
+  if(!topbar || !tabbar) return;
+
+  const topbarH = topbar.getBoundingClientRect().height;
+  tabbar.style.top = topbarH + 'px';
+
+  const combined = topbarH + tabbar.getBoundingClientRect().height;
+  document.querySelectorAll('.console, .scratch-console').forEach(el => {
+    el.style.top = (combined + 16) + 'px';
+    el.style.maxHeight = `calc(100vh - ${combined + 36}px)`;
+  });
+}
+
+window.addEventListener('resize', syncStickyOffsets);
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(syncStickyOffsets).catch(() => {});
+}
+
 buildCaseList();
 initScratchGutter();
 loadProgress();
 resumeTimedModeIfAny();
 boot();
+syncStickyOffsets();
 
 try {
   const savedView = localStorage.getItem('activeView');
