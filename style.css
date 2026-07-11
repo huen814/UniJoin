@@ -228,6 +228,31 @@
   }
   .console-section{margin-bottom:18px;}
 
+  .controls-bar{
+    max-width:1280px; margin:0 auto; padding:18px 26px 0;
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .controls-left{ display:flex; gap:10px; flex-wrap:wrap; }
+  .timer-bar{ display:flex; align-items:center; gap:10px; }
+  .timer-bar.hidden{ display:none; }
+  .timer-label{ font-size:0.75rem; color:#9caec9; display:flex; align-items:center; gap:6px; }
+  .timer-label input{
+    width:56px; background:var(--panel); border:1px solid var(--wire); color:var(--paper);
+    font-family:'JetBrains Mono', monospace; font-size:0.8rem; padding:5px 6px; border-radius:3px;
+  }
+  .timer-display{
+    font-family:'Special Elite', monospace; font-size:1.1rem; color:var(--gold);
+    background:var(--panel); border:1px solid var(--wire); padding:6px 14px; border-radius:3px;
+  }
+  .weak-badge{
+    display:none; float:right; margin-left:8px; background:var(--rejected); color:#fff;
+    font-size:0.62rem; font-weight:700; letter-spacing:.5px; padding:3px 9px; border-radius:10px;
+  }
+  .tip-box{
+    background:#23320f; border:1px solid #5c7a2e; color:#c9dba0;
+    padding:9px 12px; border-radius:4px; font-size:0.76rem; line-height:1.5; margin-top:-8px; margin-bottom:16px;
+  }
+
   .footer-note{
     text-align:center; color:#5b6b87; font-size:0.72rem; padding:20px 0 50px;
   }
