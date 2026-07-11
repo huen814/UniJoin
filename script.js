@@ -832,13 +832,25 @@ function loadProgress(){
 
 function applyInputLockState(){
   if(timedMode && timedMode.active){
+    // Exam in progress: you can still write, check your work, and use hints.
+    // Only shuffle, reset, and the scratchpad are off-limits mid-exam.
+    document.querySelectorAll('.sqlbox').forEach(ta => { if(ta.dataset.hintShown !== '1') ta.readOnly = false; });
+    document.querySelectorAll('.btn-toolbar').forEach(b => b.disabled = true);
+    document.querySelectorAll('.case-card .btn-hint').forEach(b => b.disabled = false);
+    if(db) document.querySelectorAll('.btn-check').forEach(b => b.disabled = false);
+    const scratchBtn = document.getElementById('btn-scratch');
+    if(scratchBtn) scratchBtn.disabled = true;
+  } else if(timedMode && timedMode.finished){
+    // Time's up: lock everything down.
     document.querySelectorAll('.sqlbox').forEach(ta => { ta.readOnly = true; });
     document.querySelectorAll('.btn-check').forEach(b => b.disabled = true);
-    document.querySelectorAll('.btn-hint:not(.btn-timerctl)').forEach(b => b.disabled = true);
+    document.querySelectorAll('.case-card .btn-hint').forEach(b => b.disabled = true);
+    document.querySelectorAll('.btn-toolbar').forEach(b => b.disabled = true);
     const scratchBtn = document.getElementById('btn-scratch');
     if(scratchBtn) scratchBtn.disabled = true;
   } else {
-    document.querySelectorAll('.btn-hint:not(.btn-timerctl)').forEach(b => b.disabled = false);
+    document.querySelectorAll('.case-card .btn-hint').forEach(b => b.disabled = false);
+    document.querySelectorAll('.btn-toolbar').forEach(b => b.disabled = false);
     document.querySelectorAll('.sqlbox').forEach(ta => { if(ta.dataset.hintShown !== '1') ta.readOnly = false; });
     if(db){
       document.querySelectorAll('.btn-check').forEach(b => b.disabled = false);
@@ -860,9 +872,29 @@ function shuffleCases(){
   applyInputLockState();
 }
 
+let resetArmed = false;
+let resetArmTimeout = null;
+
 function resetProgress(){
-  const ok = confirm('Reset all progress? This clears your score, solved questions, and typed answers. This cannot be undone.');
-  if(!ok) return;
+  const btn = document.getElementById('btnReset');
+
+  if(!resetArmed){
+    resetArmed = true;
+    btn.textContent = 'CLICK AGAIN TO CONFIRM';
+    btn.classList.add('on');
+    clearTimeout(resetArmTimeout);
+    resetArmTimeout = setTimeout(() => {
+      resetArmed = false;
+      btn.textContent = 'RESET PROGRESS';
+      btn.classList.remove('on');
+    }, 4000);
+    return;
+  }
+
+  resetArmed = false;
+  clearTimeout(resetArmTimeout);
+  btn.textContent = 'RESET PROGRESS';
+  btn.classList.remove('on');
 
   score = 0;
   solved = new Array(TEST_CASES.length).fill(false);
@@ -922,6 +954,7 @@ function endTimedMode(){
 function finishTimedMode(){
   if(timedMode){
     timedMode.active = false;
+    timedMode.finished = true;
     localStorage.setItem('timedMode', JSON.stringify(timedMode));
   }
   clearInterval(timerInterval);
