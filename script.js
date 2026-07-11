@@ -377,6 +377,76 @@ const TEST_CASES = [
   narrative: "Final check: for instructors 8 through 10, return <b>instructor_name, section_id, course_title</b> chained across Sections and Courses \u2014 and make sure <b>no instructor disappears</b> from the report just because they aren't assigned a section yet.",
   starter: "SELECT i.instructor_name, se.section_id, co.course_title\nFROM Instructors i\nLEFT JOIN Sections se ON i.instructor_id = se.instructor_id\nLEFT JOIN Courses co ON se.course_id = co.course_id\nWHERE i.instructor_id BETWEEN 8 AND 10\nORDER BY i.instructor_id, se.section_id;",
   expected: {"columns": ["instructor_name", "section_id", "course_title"], "rows": [["Prof. Daniel Uy", 14, "Foundations of Education"], ["Dr. Grace Manalo", 15, "Anatomy and Physiology"], ["Prof. Victor Chua", 16, "Fundamentals of Nursing"]]}
+},
+{
+  tag: "TEST CASE 21",
+  points: 5,
+  narrative: "Suzuki wants a single at-risk list: students who <b>failed</b> a course, combined with students who <b>haven't paid</b> anything yet. Use <b>UNION</b> so anyone appearing in both groups only shows up once. Return <b>first_name, last_name</b>.",
+  starter: "SELECT s.first_name, s.last_name\nFROM Grades g\nJOIN Enrollment e ON g.enrollment_id = e.enrollment_id\nJOIN Students s ON e.student_id = s.student_id\nWHERE g.remarks = 'Failed'\nUNION\nSELECT s.first_name, s.last_name\nFROM Students s\nLEFT JOIN Payments p ON s.student_id = p.student_id\nWHERE p.payment_id IS NULL\nORDER BY first_name;",
+  expected: {"columns": ["first_name", "last_name"], "rows": [["Camille", "Ocampo"], ["Carlo", "Mendoza"], ["Diego", "Castillo"], ["Gabriel", "Domingo"], ["Grace", "Bautista"], ["Isabel", "Pascual"], ["Mark", "Villanueva"], ["Miguel", "Salazar"], ["Pedro", "Reyes"], ["Rafael", "Gonzales"], ["Sofia", "Navarro"], ["Trisha", "Roxas"]]}
+},
+{
+  tag: "TEST CASE 22",
+  points: 5,
+  narrative: "Cyrene wants grade records 1 through 5 labeled automatically using <b>CASE WHEN</b>: final_grade 90+ is 'Excellent', 75\u201389 is 'Passed', anything below is 'Needs Improvement'. Return <b>first_name, final_grade, performance</b>.",
+  starter: "SELECT st.first_name, g.final_grade,\n  CASE\n    WHEN g.final_grade >= 90 THEN 'Excellent'\n    WHEN g.final_grade >= 75 THEN 'Passed'\n    ELSE 'Needs Improvement'\n  END AS performance\nFROM Grades g\nJOIN Enrollment e ON g.enrollment_id = e.enrollment_id\nJOIN Students st ON e.student_id = st.student_id\nWHERE g.enrollment_id BETWEEN 1 AND 5\nORDER BY g.enrollment_id;",
+  expected: {"columns": ["first_name", "final_grade", "performance"], "rows": [["Juan", 89, "Passed"], ["Maria", 76.5, "Passed"], ["Pedro", 57.5, "Needs Improvement"], ["Ana", 93, "Excellent"], ["Jose", 82.5, "Passed"]]}
+},
+{
+  tag: "TEST CASE 23",
+  points: 5,
+  narrative: "Coach wants to know which programs run at least one \"heavy\" course \u2014 more than 3 units. Use <b>EXISTS</b> with a correlated subquery against Courses instead of a join. Return <b>program_name</b>.",
+  starter: "SELECT p.program_name\nFROM Programs p\nWHERE EXISTS (\n  SELECT 1 FROM Courses co WHERE co.program_id = p.program_id AND co.units > 3\n)\nORDER BY p.program_id;",
+  expected: {"columns": ["program_name"], "rows": [["BS Nursing"]]}
+},
+{
+  tag: "TEST CASE 24",
+  points: 5,
+  narrative: "Alice needs staffing coverage for BS Nursing (program_id 8): which instructors are currently teaching <b>none</b> of its sections? Use <b>NOT EXISTS</b> with a correlated subquery across Sections and Courses. Return <b>instructor_name</b>.",
+  starter: "SELECT i.instructor_name\nFROM Instructors i\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM Sections se\n  JOIN Courses co ON se.course_id = co.course_id\n  WHERE se.instructor_id = i.instructor_id AND co.program_id = 8\n)\nORDER BY i.instructor_id;",
+  expected: {"columns": ["instructor_name"], "rows": [["Dr. Alan Reyes"], ["Prof. Maria Lopez"], ["Dr. James Tan"], ["Prof. Carla Dizon"], ["Dr. Miguel Torres"], ["Prof. Elena Cruz"], ["Dr. Sophia Reyes"], ["Prof. Daniel Uy"]]}
+},
+{
+  tag: "TEST CASE 25",
+  points: 5,
+  narrative: "Yasu wants a class list for every section taught by Dr. Alan Reyes (instructor_id 1) \u2014 without hardcoding section IDs. Use <b>IN</b> with a subquery against Sections. Return <b>DISTINCT first_name, last_name</b>.",
+  starter: "SELECT DISTINCT st.first_name, st.last_name\nFROM Students st\nJOIN Enrollment e ON st.student_id = e.student_id\nWHERE e.section_id IN (SELECT section_id FROM Sections WHERE instructor_id = 1)\nORDER BY st.student_id;",
+  expected: {"columns": ["first_name", "last_name"], "rows": [["Juan", "Dela Cruz"], ["Maria", "Santos"], ["Pedro", "Reyes"]]}
+},
+{
+  tag: "TEST CASE 26",
+  points: 5,
+  narrative: "Ren wants each student's total enrollment count next to their name, for students 1 through 5 \u2014 but using a <b>correlated scalar subquery</b> in the SELECT list instead of a GROUP BY. Return <b>first_name, total_enrollments</b>.",
+  starter: "SELECT st.first_name,\n  (SELECT COUNT(*) FROM Enrollment e WHERE e.student_id = st.student_id) AS total_enrollments\nFROM Students st\nWHERE st.student_id BETWEEN 1 AND 5\nORDER BY st.student_id;",
+  expected: {"columns": ["first_name", "total_enrollments"], "rows": [["Juan", 2], ["Maria", 2], ["Pedro", 2], ["Ana", 1], ["Jose", 1]]}
+},
+{
+  tag: "TEST CASE 27",
+  points: 5,
+  narrative: "Makoto wants a mailing list for students 1 through 5: one combined <b>full_name</b> column (first and last name joined with a space) alongside their email, built with <b>string concatenation</b>.",
+  starter: "SELECT st.first_name || ' ' || st.last_name AS full_name, st.email\nFROM Students st\nWHERE st.student_id BETWEEN 1 AND 5\nORDER BY st.student_id;",
+  expected: {"columns": ["full_name", "email"], "rows": [["Juan Dela Cruz", "juan.delacruz@usc.edu.ph"], ["Maria Santos", "maria.santos@usc.edu.ph"], ["Pedro Reyes", "pedro.reyes@usc.edu.ph"], ["Ana Garcia", "ana.garcia@usc.edu.ph"], ["Jose Ramos", "jose.ramos@usc.edu.ph"]]}
+},
+{
+  tag: "TEST CASE 28",
+  points: 5,
+  narrative: "Rise wants to know which single section has the highest class average \u2014 build a <b>derived table</b> (a subquery in the FROM clause) that computes average final_grade per section first, then pick the top one. Return <b>section_id, avg_grade</b>.",
+  starter: "SELECT section_id, avg_grade\nFROM (\n  SELECT se.section_id, ROUND(AVG(g.final_grade), 2) AS avg_grade\n  FROM Grades g\n  JOIN Enrollment e ON g.enrollment_id = e.enrollment_id\n  JOIN Sections se ON e.section_id = se.section_id\n  GROUP BY se.section_id\n) ranked\nORDER BY avg_grade DESC\nLIMIT 1;",
+  expected: {"columns": ["section_id", "avg_grade"], "rows": [[3, 93.0]]}
+},
+{
+  tag: "TEST CASE 29",
+  points: 5,
+  narrative: "Zoe wants one summary row per course for courses 1 through 3: the course title, a <b>COUNT</b> of enrolled students, and the <b>AVG</b> final_grade \u2014 two different aggregates side by side in the same query.",
+  starter: "SELECT co.course_title,\n  COUNT(e.enrollment_id) AS total_enrolled,\n  ROUND(AVG(g.final_grade), 2) AS avg_grade\nFROM Courses co\nJOIN Sections se ON se.course_id = co.course_id\nJOIN Enrollment e ON e.section_id = se.section_id\nLEFT JOIN Grades g ON g.enrollment_id = e.enrollment_id\nWHERE co.course_id IN (1,2,3)\nGROUP BY co.course_id\nORDER BY co.course_id;",
+  expected: {"columns": ["course_title", "total_enrolled", "avg_grade"], "rows": [["Intro to Programming", 3, 74.33], ["Data Structures", 1, 93.0], ["Database Systems", 2, 76.75]]}
+},
+{
+  tag: "TEST CASE 30 \u2014 CLOSING THE TERM",
+  points: 5,
+  narrative: "Flins is finalizing report cards for enrollment records 15 through 20 \u2014 none of them have a grade on file yet. Instead of showing a blank NULL, use <b>COALESCE</b> to display 'No Grade Yet'. Return <b>first_name, final_grade</b>.",
+  starter: "SELECT st.first_name, COALESCE(CAST(g.final_grade AS TEXT), 'No Grade Yet') AS final_grade\nFROM Enrollment e\nJOIN Students st ON e.student_id = st.student_id\nLEFT JOIN Grades g ON g.enrollment_id = e.enrollment_id\nWHERE e.enrollment_id BETWEEN 15 AND 20\nORDER BY e.enrollment_id;",
+  expected: {"columns": ["first_name", "final_grade"], "rows": [["Rafael", "No Grade Yet"], ["Sofia", "No Grade Yet"], ["Diego", "No Grade Yet"], ["Camille", "No Grade Yet"], ["Miguel", "No Grade Yet"], ["Isabel", "No Grade Yet"]]}
 }
 ];
 let db = null;
@@ -478,7 +548,8 @@ function renderTable(columns, rows){
 }
 
 function updateScore(){
-  document.getElementById('scoreVal').textContent = score + ' / 100';
+  const totalPoints = TEST_CASES.reduce((a, c) => a + c.points, 0);
+  document.getElementById('scoreVal').textContent = score + ' / ' + totalPoints;
   const solvedCount = solved.filter(Boolean).length;
   const pct = Math.round((solvedCount / TEST_CASES.length) * 100);
   document.getElementById('progressFill').style.width = pct + '%';
