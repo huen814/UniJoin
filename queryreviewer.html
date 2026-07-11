@@ -33,6 +33,22 @@
 </div>
 
 <div id="view-cases" class="view">
+  <div class="controls-bar">
+    <div class="controls-left">
+      <button class="btn-hint btn-toolbar" onclick="shuffleCases()">SHUFFLE QUESTIONS</button>
+      <button class="btn-hint btn-toolbar" onclick="resetProgress()">RESET PROGRESS</button>
+    </div>
+    <div class="timer-bar" id="timerControls">
+      <label class="timer-label">Timed Mode:
+        <input type="number" id="timerMinutes" min="5" max="180" value="45"> min
+      </label>
+      <button class="btn-hint btn-toolbar" onclick="startTimedMode()">START TIMED MODE</button>
+    </div>
+    <div class="timer-bar hidden" id="timerActive">
+      <span id="timerDisplay" class="timer-display">45:00</span>
+      <button class="btn-hint btn-timerctl" onclick="endTimedMode()">END NOW</button>
+    </div>
+  </div>
   <div class="layout">
     <div id="caseList"></div>
 

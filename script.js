@@ -243,6 +243,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Registrar analyst Sua needs a quick catalog view: for courses 1 through 5, return <b>course_code, course_title, program_name</b> by joining Courses to Programs.",
   starter: "SELECT co.course_code, co.course_title, p.program_name\nFROM Courses co\nJOIN Programs p ON co.program_id = p.program_id\nWHERE co.course_id BETWEEN 1 AND 5\nORDER BY co.course_id;",
+  tip: "Double check your JOIN condition — you need co.program_id = p.program_id, not course_title compared to an ID.",
   expected: {"columns": ["course_code", "course_title", "program_name"], "rows": [["CS101", "Intro to Programming", "BS Computer Science"], ["CS102", "Data Structures", "BS Computer Science"], ["CS201", "Database Systems", "BS Computer Science"], ["CE101", "Statics of Rigid Bodies", "BS Civil Engineering"], ["CE102", "Surveying", "BS Civil Engineering"]]}
 },
 {
@@ -250,6 +251,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "One student record has <b>never</b> touched an enrollment table \u2014 Mizuki wants to flag it before the semester audit. Return <b>student_id, first_name, last_name</b> for every student with no matching row in Enrollment.",
   starter: "SELECT s.student_id, s.first_name, s.last_name\nFROM Students s\nLEFT JOIN Enrollment e ON s.student_id = e.student_id\nWHERE e.enrollment_id IS NULL;",
+  tip: "Make sure you're using LEFT JOIN (not an inner JOIN) so unmatched students aren't dropped, then filter where the enrollment column IS NULL.",
   expected: {"columns": ["student_id", "first_name", "last_name"], "rows": [[20, "Trisha", "Roxas"]]}
 },
 {
@@ -257,6 +259,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Huen is building a quick roster for enrollment records 1 through 3: the enrollment_id, the student's first name, and the section they're in \u2014 pulled together from <b>three</b> separate tables.",
   starter: "SELECT e.enrollment_id, st.first_name, se.section_name\nFROM Enrollment e\nJOIN Students st ON e.student_id = st.student_id\nJOIN Sections se ON e.section_id = se.section_id\nWHERE e.enrollment_id BETWEEN 1 AND 3\nORDER BY e.enrollment_id;",
+  tip: "You need three tables chained together — check that Enrollment is joined to both Students and Sections on the correct foreign keys.",
   expected: {"columns": ["enrollment_id", "first_name", "section_name"], "rows": [[1, "Juan", "A"], [2, "Maria", "A"], [3, "Pedro", "A"]]}
 },
 {
@@ -264,6 +267,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "For sections 1 through 5, Clementine wants a capacity check \u2014 <b>every</b> section should show up whether or not anyone has enrolled in it yet. Return <b>section_id, enrollment_id</b> (NULL where nobody's enrolled).",
   starter: "SELECT se.section_id, e.enrollment_id\nFROM Sections se\nLEFT JOIN Enrollment e ON se.section_id = e.section_id\nWHERE se.section_id BETWEEN 1 AND 5\nORDER BY se.section_id, e.enrollment_id;",
+  tip: "Use LEFT JOIN from Sections to Enrollment (not the other way around) so every section stays even without enrollees.",
   expected: {"columns": ["section_id", "enrollment_id"], "rows": [[1, 1], [1, 2], [1, 3], [2, null], [3, 4], [4, 5], [4, 6], [5, 7], [5, 8]]}
 },
 {
@@ -271,6 +275,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "To show a new clerk exactly why forgetting the <b>ON</b> clause is dangerous, Snow wants a deliberate, unfiltered pairing: every one of students 1, 2, 3 matched against every one of courses 1, 2, 3 \u2014 a plain cross join, no join condition at all (3 \u00d7 3 = 9 rows). Return <b>first_name, course_title</b>.",
   starter: "SELECT st.first_name, co.course_title\nFROM Students st\nCROSS JOIN Courses co\nWHERE st.student_id IN (1,2,3) AND co.course_id IN (1,2,3)\nORDER BY st.student_id, co.course_id;",
+  tip: "This should be a plain CROSS JOIN with no ON clause at all — don't accidentally add a join condition.",
   expected: {"columns": ["first_name", "course_title"], "rows": [["Juan", "Intro to Programming"], ["Juan", "Data Structures"], ["Juan", "Database Systems"], ["Maria", "Intro to Programming"], ["Maria", "Data Structures"], ["Maria", "Database Systems"], ["Pedro", "Intro to Programming"], ["Pedro", "Data Structures"], ["Pedro", "Database Systems"]]}
 },
 {
@@ -278,6 +283,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Varka suspects certain instructor ranks are understaffed. <b>Self-join</b> Instructors to itself to pair up instructors who share the same rank \u2014 no instructor paired with themselves, and no reversed duplicate pairs. Return <b>the two instructor names and the shared rank</b>, limited to the first 5 pairs ordered by both instructor_ids.",
   starter: "SELECT i1.instructor_name, i2.instructor_name, i1.rank\nFROM Instructors i1\nJOIN Instructors i2\n  ON i1.rank = i2.rank\n  AND i1.instructor_id < i2.instructor_id\nORDER BY i1.instructor_id, i2.instructor_id\nLIMIT 5;",
+  tip: "Remember the self-join needs i1.instructor_id < i2.instructor_id to avoid duplicate or reversed pairs.",
   expected: {"columns": ["instructor_name", "instructor_name", "rank"], "rows": [["Dr. Alan Reyes", "Dr. James Tan", "Professor"], ["Dr. Alan Reyes", "Dr. Miguel Torres", "Professor"], ["Dr. Alan Reyes", "Dr. Sophia Reyes", "Professor"], ["Dr. Alan Reyes", "Dr. Grace Manalo", "Professor"], ["Prof. Maria Lopez", "Prof. Elena Cruz", "Associate Professor"]]}
 },
 {
@@ -285,6 +291,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "For grade records 1 through 3, Dan Heng wants the full academic trail: course title, final grade, and remarks \u2014 walking from Grades, through Enrollment and Sections, to Courses.",
   starter: "SELECT co.course_title, g.final_grade, g.remarks\nFROM Grades g\nJOIN Enrollment e ON g.enrollment_id = e.enrollment_id\nJOIN Sections se ON e.section_id = se.section_id\nJOIN Courses co ON se.course_id = co.course_id\nWHERE g.enrollment_id BETWEEN 1 AND 3\nORDER BY g.enrollment_id;",
+  tip: "Check your chain: Grades → Enrollment → Sections → Courses, joining on the correct foreign key at each step.",
   expected: {"columns": ["course_title", "final_grade", "remarks"], "rows": [["Intro to Programming", 89, "Passed"], ["Intro to Programming", 76.5, "Passed"], ["Intro to Programming", 57.5, "Failed"]]}
 },
 {
@@ -292,6 +299,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Students 1 through 3 each have multiple Enrollment rows, and a careless join would repeat them. Louise only wants each student's <b>student_id, semester</b> to appear <b>once</b>, even though the underlying join produces duplicates.",
   starter: "SELECT DISTINCT st.student_id, e.semester\nFROM Students st\nJOIN Enrollment e ON st.student_id = e.student_id\nWHERE st.student_id IN (1,2,3)\nORDER BY st.student_id;",
+  tip: "Don't forget DISTINCT — without it you'll get duplicate rows from the join.",
   expected: {"columns": ["student_id", "semester"], "rows": [[1, "1st Semester"], [2, "1st Semester"], [3, "1st Semester"]]}
 },
 {
@@ -299,6 +307,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "For programs 1 through 5, Francis wants a per-program course count \u2014 <b>every</b> program should appear, even one with very few courses on file. Return <b>program_name, course_count</b>.",
   starter: "SELECT p.program_name, COUNT(co.course_id) AS course_count\nFROM Programs p\nLEFT JOIN Courses co ON p.program_id = co.program_id\nWHERE p.program_id BETWEEN 1 AND 5\nGROUP BY p.program_id\nORDER BY p.program_id;",
+  tip: "Use LEFT JOIN from Programs to Courses so programs with fewer courses still appear, then GROUP BY the program.",
   expected: {"columns": ["program_name", "course_count"], "rows": [["BS Computer Science", 3], ["BS Civil Engineering", 2], ["BS Psychology", 2], ["BA Communication", 1], ["BS Accountancy", 2]]}
 },
 {
@@ -306,6 +315,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Closing the semester audit: for sections 1 through 5, return <b>section_id, course_title, instructor_name</b> chained across Courses and Instructors \u2014 and make sure <b>no section disappears</b> from the report just because it's missing a course or instructor link.",
   starter: "SELECT se.section_id, co.course_title, i.instructor_name\nFROM Sections se\nLEFT JOIN Courses co ON se.course_id = co.course_id\nLEFT JOIN Instructors i ON se.instructor_id = i.instructor_id\nWHERE se.section_id BETWEEN 1 AND 5\nORDER BY se.section_id;",
+  tip: "Use LEFT JOIN for both Courses and Instructors so no section drops out of the report.",
   expected: {"columns": ["section_id", "course_title", "instructor_name"], "rows": [[1, "Intro to Programming", "Dr. Alan Reyes"], [2, "Intro to Programming", "Dr. Alan Reyes"], [3, "Data Structures", "Prof. Maria Lopez"], [4, "Database Systems", "Prof. Maria Lopez"], [5, "Statics of Rigid Bodies", "Dr. James Tan"]]}
 },
 {
@@ -313,6 +323,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Alex wants a grade summary for sections 1, 4, and 5: the course title and the <b>average final_grade</b> (rounded to 2 decimal places), grouped by course.",
   starter: "SELECT co.course_title, ROUND(AVG(g.final_grade), 2) AS avg_grade\nFROM Grades g\nJOIN Enrollment e ON g.enrollment_id = e.enrollment_id\nJOIN Sections se ON e.section_id = se.section_id\nJOIN Courses co ON se.course_id = co.course_id\nWHERE se.section_id IN (1,4,5)\nGROUP BY co.course_id\nORDER BY co.course_id;",
+  tip: "Make sure you're grouping by course, not by section, when computing the average grade.",
   expected: {"columns": ["course_title", "avg_grade"], "rows": [["Intro to Programming", 74.33], ["Database Systems", 76.75], ["Statics of Rigid Bodies", 79.0]]}
 },
 {
@@ -320,6 +331,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Cherry needs to find sections that are actually filling up. Return <b>section_id, enrolled</b> (a count of enrollment rows) for every section with <b>more than one</b> enrolled student, using <b>GROUP BY</b> and <b>HAVING</b>.",
   starter: "SELECT se.section_id, COUNT(e.enrollment_id) AS enrolled\nFROM Sections se\nJOIN Enrollment e ON se.section_id = e.section_id\nGROUP BY se.section_id\nHAVING COUNT(e.enrollment_id) > 1\nORDER BY se.section_id;",
+  tip: "HAVING filters after grouping — don't try to use WHERE for the enrolled-count condition.",
   expected: {"columns": ["section_id", "enrolled"], "rows": [[1, 3], [4, 2], [5, 2], [7, 2], [9, 2], [11, 2], [15, 2], [16, 2]]}
 },
 {
@@ -327,6 +339,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Using a <b>subquery</b>, Lin wants to flag the students who paid <b>more</b> than the average payment amount across the whole university. Return <b>first_name, last_name, amount</b>, ordered by amount descending.",
   starter: "SELECT s.first_name, s.last_name, p.amount\nFROM Payments p\nJOIN Students s ON p.student_id = s.student_id\nWHERE p.amount > (SELECT AVG(amount) FROM Payments)\nORDER BY p.amount DESC, s.student_id;",
+  tip: "The subquery should compute AVG(amount) with no WHERE clause — it needs the overall average, not a filtered one.",
   expected: {"columns": ["first_name", "last_name", "amount"], "rows": [["Juan", "Dela Cruz", 15000], ["Maria", "Santos", 15000], ["Ana", "Garcia", 15000], ["Liza", "Torres", 15000], ["Grace", "Bautista", 15000], ["Paolo", "Cruz", 15000], ["Nina", "Aquino", 15000], ["Ella", "Fernandez", 15000]]}
 },
 {
@@ -334,6 +347,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Mei is auditing tuition payments made by students enrolled in <b>BS Computer Science</b> (program_id 1). Chain Students through Enrollment, Sections, and Courses to Payments, and return <b>first_name, last_name, amount</b>.",
   starter: "SELECT s.first_name, s.last_name, py.amount\nFROM Students s\nJOIN Enrollment e ON s.student_id = e.student_id\nJOIN Sections se ON e.section_id = se.section_id\nJOIN Courses co ON se.course_id = co.course_id\nJOIN Payments py ON py.student_id = s.student_id\nWHERE co.program_id = 1\nORDER BY s.student_id;",
+  tip: "Check that you're filtering on co.program_id = 1, not on program_name.",
   expected: {"columns": ["first_name", "last_name", "amount"], "rows": [["Juan", "Dela Cruz", 15000], ["Juan", "Dela Cruz", 15000], ["Maria", "Santos", 15000], ["Pedro", "Reyes", 12000], ["Ana", "Garcia", 15000], ["Jose", "Ramos", 10000]]}
 },
 {
@@ -341,6 +355,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "For enrollment records 1 through 5, Maomao wants an attendance tally \u2014 <b>every</b> enrollment should show up even if no attendance has been logged yet. Return <b>enrollment_id, days_logged</b> (a count of ClassAttendance rows).",
   starter: "SELECT e.enrollment_id, COUNT(ca.attendance_id) AS days_logged\nFROM Enrollment e\nLEFT JOIN ClassAttendance ca ON e.enrollment_id = ca.enrollment_id\nWHERE e.enrollment_id BETWEEN 1 AND 5\nGROUP BY e.enrollment_id\nORDER BY e.enrollment_id;",
+  tip: "Use LEFT JOIN to ClassAttendance so enrollments with zero attendance records still show up.",
   expected: {"columns": ["enrollment_id", "days_logged"], "rows": [[1, 3], [2, 2], [3, 2], [4, 1], [5, 2]]}
 },
 {
@@ -348,6 +363,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Akito wants a college-level overview: <b>college_name, program_count</b> for every college, including any college that happens to offer very few programs.",
   starter: "SELECT c.college_name, COUNT(p.program_id) AS program_count\nFROM Colleges c\nLEFT JOIN Programs p ON c.college_id = p.college_id\nGROUP BY c.college_id\nORDER BY c.college_id;",
+  tip: "Use LEFT JOIN from Colleges to Programs so colleges with few programs still appear in the results.",
   expected: {"columns": ["college_name", "program_count"], "rows": [["College of Engineering", 2], ["College of Arts and Sciences", 2], ["College of Business", 2], ["College of Education", 1], ["College of Nursing", 1]]}
 },
 {
@@ -355,6 +371,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "For students 1 and 2, An wants the full academic path: first_name, course_code, and program_name \u2014 chained across Enrollment, Sections, Courses, and Programs, a <b>four-table</b> join.",
   starter: "SELECT st.first_name, co.course_code, p.program_name\nFROM Students st\nJOIN Enrollment e ON st.student_id = e.student_id\nJOIN Sections se ON e.section_id = se.section_id\nJOIN Courses co ON se.course_id = co.course_id\nJOIN Programs p ON co.program_id = p.program_id\nWHERE st.student_id IN (1,2)\nORDER BY st.student_id, co.course_id;",
+  tip: "This needs four tables chained together — Enrollment, Sections, Courses, and Programs, each joined on the correct key.",
   expected: {"columns": ["first_name", "course_code", "program_name"], "rows": [["Juan", "CS101", "BS Computer Science"], ["Juan", "CS201", "BS Computer Science"], ["Maria", "CS101", "BS Computer Science"], ["Maria", "PSY102", "BS Psychology"]]}
 },
 {
@@ -362,6 +379,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Nicole needs a list of students who have <b>no payment record at all</b> on file \u2014 an anti-join between Students and Payments. Return <b>student_id, first_name, last_name</b>.",
   starter: "SELECT s.student_id, s.first_name, s.last_name\nFROM Students s\nLEFT JOIN Payments p ON s.student_id = p.student_id\nWHERE p.payment_id IS NULL\nORDER BY s.student_id;",
+  tip: "Use LEFT JOIN from Students to Payments and filter where payment_id IS NULL.",
   expected: {"columns": ["student_id", "first_name", "last_name"], "rows": [[7, "Mark", "Villanueva"], [11, "Carlo", "Mendoza"], [13, "Rafael", "Gonzales"], [14, "Sofia", "Navarro"], [15, "Diego", "Castillo"], [16, "Camille", "Ocampo"], [17, "Miguel", "Salazar"], [18, "Isabel", "Pascual"], [19, "Gabriel", "Domingo"], [20, "Trisha", "Roxas"]]}
 },
 {
@@ -369,6 +387,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "For the Dean's List shortlist, Darren wants the <b>top 3</b> highest final_grade records university-wide. Return <b>first_name, last_name, final_grade</b>, ordered highest first.",
   starter: "SELECT st.first_name, st.last_name, g.final_grade\nFROM Grades g\nJOIN Enrollment e ON g.enrollment_id = e.enrollment_id\nJOIN Students st ON e.student_id = st.student_id\nORDER BY g.final_grade DESC\nLIMIT 3;",
+  tip: "Don't forget ORDER BY final_grade DESC before your LIMIT.",
   expected: {"columns": ["first_name", "last_name", "final_grade"], "rows": [["Mark", "Villanueva", 95.5], ["Ana", "Garcia", 93], ["Ella", "Fernandez", 91]]}
 },
 {
@@ -376,6 +395,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Final check: for instructors 8 through 10, return <b>instructor_name, section_id, course_title</b> chained across Sections and Courses \u2014 and make sure <b>no instructor disappears</b> from the report just because they aren't assigned a section yet.",
   starter: "SELECT i.instructor_name, se.section_id, co.course_title\nFROM Instructors i\nLEFT JOIN Sections se ON i.instructor_id = se.instructor_id\nLEFT JOIN Courses co ON se.course_id = co.course_id\nWHERE i.instructor_id BETWEEN 8 AND 10\nORDER BY i.instructor_id, se.section_id;",
+  tip: "Use LEFT JOIN for both Sections→Courses and Sections→Instructors so no instructor drops out.",
   expected: {"columns": ["instructor_name", "section_id", "course_title"], "rows": [["Prof. Daniel Uy", 14, "Foundations of Education"], ["Dr. Grace Manalo", 15, "Anatomy and Physiology"], ["Prof. Victor Chua", 16, "Fundamentals of Nursing"]]}
 },
 {
@@ -383,6 +403,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Suzuki wants a single at-risk list: students who <b>failed</b> a course, combined with students who <b>haven't paid</b> anything yet. Use <b>UNION</b> so anyone appearing in both groups only shows up once. Return <b>first_name, last_name</b>.",
   starter: "SELECT s.first_name, s.last_name\nFROM Grades g\nJOIN Enrollment e ON g.enrollment_id = e.enrollment_id\nJOIN Students s ON e.student_id = s.student_id\nWHERE g.remarks = 'Failed'\nUNION\nSELECT s.first_name, s.last_name\nFROM Students s\nLEFT JOIN Payments p ON s.student_id = p.student_id\nWHERE p.payment_id IS NULL\nORDER BY first_name;",
+  tip: "Make sure both halves of the UNION return the same number of columns, in the same order.",
   expected: {"columns": ["first_name", "last_name"], "rows": [["Camille", "Ocampo"], ["Carlo", "Mendoza"], ["Diego", "Castillo"], ["Gabriel", "Domingo"], ["Grace", "Bautista"], ["Isabel", "Pascual"], ["Mark", "Villanueva"], ["Miguel", "Salazar"], ["Pedro", "Reyes"], ["Rafael", "Gonzales"], ["Sofia", "Navarro"], ["Trisha", "Roxas"]]}
 },
 {
@@ -390,6 +411,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Cyrene wants grade records 1 through 5 labeled automatically using <b>CASE WHEN</b>: final_grade 90+ is 'Excellent', 75\u201389 is 'Passed', anything below is 'Needs Improvement'. Return <b>first_name, final_grade, performance</b>.",
   starter: "SELECT st.first_name, g.final_grade,\n  CASE\n    WHEN g.final_grade >= 90 THEN 'Excellent'\n    WHEN g.final_grade >= 75 THEN 'Passed'\n    ELSE 'Needs Improvement'\n  END AS performance\nFROM Grades g\nJOIN Enrollment e ON g.enrollment_id = e.enrollment_id\nJOIN Students st ON e.student_id = st.student_id\nWHERE g.enrollment_id BETWEEN 1 AND 5\nORDER BY g.enrollment_id;",
+  tip: "CASE WHEN conditions are checked in order from top to bottom — put the highest threshold first.",
   expected: {"columns": ["first_name", "final_grade", "performance"], "rows": [["Juan", 89, "Passed"], ["Maria", 76.5, "Passed"], ["Pedro", 57.5, "Needs Improvement"], ["Ana", 93, "Excellent"], ["Jose", 82.5, "Passed"]]}
 },
 {
@@ -397,6 +419,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Coach wants to know which programs run at least one \"heavy\" course \u2014 more than 3 units. Use <b>EXISTS</b> with a correlated subquery against Courses instead of a join. Return <b>program_name</b>.",
   starter: "SELECT p.program_name\nFROM Programs p\nWHERE EXISTS (\n  SELECT 1 FROM Courses co WHERE co.program_id = p.program_id AND co.units > 3\n)\nORDER BY p.program_id;",
+  tip: "EXISTS should reference co.program_id = p.program_id inside the subquery, correlated back to the outer row.",
   expected: {"columns": ["program_name"], "rows": [["BS Nursing"]]}
 },
 {
@@ -404,6 +427,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Alice needs staffing coverage for BS Nursing (program_id 8): which instructors are currently teaching <b>none</b> of its sections? Use <b>NOT EXISTS</b> with a correlated subquery across Sections and Courses. Return <b>instructor_name</b>.",
   starter: "SELECT i.instructor_name\nFROM Instructors i\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM Sections se\n  JOIN Courses co ON se.course_id = co.course_id\n  WHERE se.instructor_id = i.instructor_id AND co.program_id = 8\n)\nORDER BY i.instructor_id;",
+  tip: "NOT EXISTS needs the same join logic as EXISTS, just negated — double check your correlated condition.",
   expected: {"columns": ["instructor_name"], "rows": [["Dr. Alan Reyes"], ["Prof. Maria Lopez"], ["Dr. James Tan"], ["Prof. Carla Dizon"], ["Dr. Miguel Torres"], ["Prof. Elena Cruz"], ["Dr. Sophia Reyes"], ["Prof. Daniel Uy"]]}
 },
 {
@@ -411,6 +435,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Yasu wants a class list for every section taught by Dr. Alan Reyes (instructor_id 1) \u2014 without hardcoding section IDs. Use <b>IN</b> with a subquery against Sections. Return <b>DISTINCT first_name, last_name</b>.",
   starter: "SELECT DISTINCT st.first_name, st.last_name\nFROM Students st\nJOIN Enrollment e ON st.student_id = e.student_id\nWHERE e.section_id IN (SELECT section_id FROM Sections WHERE instructor_id = 1)\nORDER BY st.student_id;",
+  tip: "The subquery should return section_id values only — make sure the outer WHERE uses IN correctly against it.",
   expected: {"columns": ["first_name", "last_name"], "rows": [["Juan", "Dela Cruz"], ["Maria", "Santos"], ["Pedro", "Reyes"]]}
 },
 {
@@ -418,6 +443,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Ren wants each student's total enrollment count next to their name, for students 1 through 5 \u2014 but using a <b>correlated scalar subquery</b> in the SELECT list instead of a GROUP BY. Return <b>first_name, total_enrollments</b>.",
   starter: "SELECT st.first_name,\n  (SELECT COUNT(*) FROM Enrollment e WHERE e.student_id = st.student_id) AS total_enrollments\nFROM Students st\nWHERE st.student_id BETWEEN 1 AND 5\nORDER BY st.student_id;",
+  tip: "The correlated subquery needs WHERE e.student_id = st.student_id to link back to the outer row.",
   expected: {"columns": ["first_name", "total_enrollments"], "rows": [["Juan", 2], ["Maria", 2], ["Pedro", 2], ["Ana", 1], ["Jose", 1]]}
 },
 {
@@ -425,6 +451,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Makoto wants a mailing list for students 1 through 5: one combined <b>full_name</b> column (first and last name joined with a space) alongside their email, built with <b>string concatenation</b>.",
   starter: "SELECT st.first_name || ' ' || st.last_name AS full_name, st.email\nFROM Students st\nWHERE st.student_id BETWEEN 1 AND 5\nORDER BY st.student_id;",
+  tip: "Use || to concatenate first_name and last_name with a space in between.",
   expected: {"columns": ["full_name", "email"], "rows": [["Juan Dela Cruz", "juan.delacruz@usc.edu.ph"], ["Maria Santos", "maria.santos@usc.edu.ph"], ["Pedro Reyes", "pedro.reyes@usc.edu.ph"], ["Ana Garcia", "ana.garcia@usc.edu.ph"], ["Jose Ramos", "jose.ramos@usc.edu.ph"]]}
 },
 {
@@ -432,6 +459,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Rise wants to know which single section has the highest class average \u2014 build a <b>derived table</b> (a subquery in the FROM clause) that computes average final_grade per section first, then pick the top one. Return <b>section_id, avg_grade</b>.",
   starter: "SELECT section_id, avg_grade\nFROM (\n  SELECT se.section_id, ROUND(AVG(g.final_grade), 2) AS avg_grade\n  FROM Grades g\n  JOIN Enrollment e ON g.enrollment_id = e.enrollment_id\n  JOIN Sections se ON e.section_id = se.section_id\n  GROUP BY se.section_id\n) ranked\nORDER BY avg_grade DESC\nLIMIT 1;",
+  tip: "Group and average inside the subquery first, then ORDER BY and LIMIT in the outer query.",
   expected: {"columns": ["section_id", "avg_grade"], "rows": [[3, 93.0]]}
 },
 {
@@ -439,6 +467,7 @@ const TEST_CASES = [
   points: 5,
   narrative: "Zoe wants one summary row per course for courses 1 through 3: the course title, a <b>COUNT</b> of enrolled students, and the <b>AVG</b> final_grade \u2014 two different aggregates side by side in the same query.",
   starter: "SELECT co.course_title,\n  COUNT(e.enrollment_id) AS total_enrolled,\n  ROUND(AVG(g.final_grade), 2) AS avg_grade\nFROM Courses co\nJOIN Sections se ON se.course_id = co.course_id\nJOIN Enrollment e ON e.section_id = se.section_id\nLEFT JOIN Grades g ON g.enrollment_id = e.enrollment_id\nWHERE co.course_id IN (1,2,3)\nGROUP BY co.course_id\nORDER BY co.course_id;",
+  tip: "Use LEFT JOIN to Grades so courses still count their enrollments even when a grade hasn't been entered yet.",
   expected: {"columns": ["course_title", "total_enrolled", "avg_grade"], "rows": [["Intro to Programming", 3, 74.33], ["Data Structures", 1, 93.0], ["Database Systems", 2, 76.75]]}
 },
 {
@@ -446,12 +475,17 @@ const TEST_CASES = [
   points: 5,
   narrative: "Flins is finalizing report cards for enrollment records 15 through 20 \u2014 none of them have a grade on file yet. Instead of showing a blank NULL, use <b>COALESCE</b> to display 'No Grade Yet'. Return <b>first_name, final_grade</b>.",
   starter: "SELECT st.first_name, COALESCE(CAST(g.final_grade AS TEXT), 'No Grade Yet') AS final_grade\nFROM Enrollment e\nJOIN Students st ON e.student_id = st.student_id\nLEFT JOIN Grades g ON g.enrollment_id = e.enrollment_id\nWHERE e.enrollment_id BETWEEN 15 AND 20\nORDER BY e.enrollment_id;",
+  tip: "Use COALESCE together with a LEFT JOIN to Grades so ungraded enrollments still appear with a fallback value.",
   expected: {"columns": ["first_name", "final_grade"], "rows": [["Rafael", "No Grade Yet"], ["Sofia", "No Grade Yet"], ["Diego", "No Grade Yet"], ["Camille", "No Grade Yet"], ["Miguel", "No Grade Yet"], ["Isabel", "No Grade Yet"]]}
 }
 ];
 let db = null;
 let score = 0;
 let solved = new Array(TEST_CASES.length).fill(false);
+let wrongAttempts = new Array(TEST_CASES.length).fill(false);
+let caseOrder = TEST_CASES.map((tc, idx) => idx);
+let timedMode = null;
+let timerInterval = null;
 
 function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -459,9 +493,12 @@ function esc(s){
 
 function buildCaseList(){
   const wrap = document.getElementById('caseList');
-  wrap.innerHTML = TEST_CASES.map((tc, idx) => `
+  wrap.innerHTML = caseOrder.map(idx => {
+    const tc = TEST_CASES[idx];
+    return `
     <div class="case-card" id="card-${idx}">
       <span class="qpoints">${tc.points} PTS</span>
+      <span class="weak-badge" id="weakbadge-${idx}" style="display:none;">RETRY</span>
       <div class="evidence-tag">${tc.tag}</div>
       <div class="narrative">${tc.narrative}</div>
       <div class="editor">
@@ -476,7 +513,8 @@ function buildCaseList(){
         <span class="status-pill" id="pill-${idx}"></span>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   TEST_CASES.forEach((tc, idx) => {
     const ta = document.getElementById('sql-'+idx);
@@ -490,6 +528,13 @@ function buildCaseList(){
     updateGutter();
     ta.addEventListener('input', () => { updateGutter(); saveProgress(); });
     ta.addEventListener('scroll', () => { gutter.scrollTop = ta.scrollTop; });
+    ta.addEventListener('keydown', (evt) => {
+      if((evt.ctrlKey || evt.metaKey) && evt.key === 'Enter'){
+        evt.preventDefault();
+        const btn = document.getElementById('btn-'+idx);
+        if(!btn.disabled) checkCase(idx);
+      }
+    });
   });
 }
 
@@ -652,20 +697,26 @@ function checkCase(idx){
   queryPanel.innerHTML = `<pre class="queryEcho">${esc(sql)}</pre>`;
   expPanel.innerHTML = renderTable(tc.expected.columns, tc.expected.rows);
 
+  const tipHtml = `<div class="tip-box">\uD83D\uDCA1 ${esc(tc.tip)}</div>`;
+
   let result;
   try {
     result = db.exec(sql);
   } catch(err){
-    yourPanel.innerHTML = `<div class="errBox">SQL ERROR:\n${esc(err.message)}</div>`;
+    yourPanel.innerHTML = `<div class="errBox">SQL ERROR:\n${esc(err.message)}</div>` + tipHtml;
     pill.textContent = 'INCORRECT';
     pill.className = 'status-pill fail';
+    markWeak(idx);
+    saveProgress();
     return;
   }
 
   if(!result || result.length === 0){
-    yourPanel.innerHTML = `<div class="errBox">Query ran but returned no result set (did you write a SELECT?).</div>`;
+    yourPanel.innerHTML = `<div class="errBox">Query ran but returned no result set (did you write a SELECT?).</div>` + tipHtml;
     pill.textContent = 'INCORRECT';
     pill.className = 'status-pill fail';
+    markWeak(idx);
+    saveProgress();
     return;
   }
 
@@ -686,11 +737,24 @@ function checkCase(idx){
       score += tc.points;
       updateScore();
     }
+    setWeakBadge(idx, false);
   } else {
     pill.textContent = 'INCORRECT';
     pill.className = 'status-pill fail';
+    yourPanel.innerHTML += tipHtml;
+    markWeak(idx);
   }
   saveProgress();
+}
+
+function markWeak(idx){
+  wrongAttempts[idx] = true;
+  if(!solved[idx]) setWeakBadge(idx, true);
+}
+
+function setWeakBadge(idx, show){
+  const badge = document.getElementById('weakbadge-'+idx);
+  if(badge) badge.style.display = show ? 'inline-block' : 'none';
 }
 
 function runScratch(){
@@ -727,7 +791,7 @@ function saveProgress(){
       const ta = document.getElementById('sql-'+idx);
       return ta.dataset.hintShown === '1' ? (ta.dataset.userAnswer || '') : ta.value;
     });
-    const state = { score, solved, answers };
+    const state = { score, solved, wrongAttempts, caseOrder, answers };
     localStorage.setItem('registrarProgress', JSON.stringify(state));
   } catch(e){}
 }
@@ -741,6 +805,12 @@ function loadProgress(){
 
     score = state.score || 0;
     solved = TEST_CASES.map((tc, idx) => !!state.solved[idx]);
+    wrongAttempts = TEST_CASES.map((tc, idx) => !!(state.wrongAttempts && state.wrongAttempts[idx]));
+
+    if(Array.isArray(state.caseOrder) && state.caseOrder.length === TEST_CASES.length){
+      caseOrder = state.caseOrder;
+      buildCaseList();
+    }
 
     TEST_CASES.forEach((tc, idx) => {
       const ta = document.getElementById('sql-'+idx);
@@ -753,9 +823,142 @@ function loadProgress(){
         pill.textContent = 'VERIFIED';
         pill.className = 'status-pill pass';
       }
+      setWeakBadge(idx, wrongAttempts[idx] && !solved[idx]);
     });
 
     updateScore();
+  } catch(e){}
+}
+
+function applyInputLockState(){
+  if(timedMode && timedMode.active){
+    document.querySelectorAll('.sqlbox').forEach(ta => { ta.readOnly = true; });
+    document.querySelectorAll('.btn-check').forEach(b => b.disabled = true);
+    document.querySelectorAll('.btn-hint:not(.btn-timerctl)').forEach(b => b.disabled = true);
+    const scratchBtn = document.getElementById('btn-scratch');
+    if(scratchBtn) scratchBtn.disabled = true;
+  } else {
+    document.querySelectorAll('.btn-hint:not(.btn-timerctl)').forEach(b => b.disabled = false);
+    document.querySelectorAll('.sqlbox').forEach(ta => { if(ta.dataset.hintShown !== '1') ta.readOnly = false; });
+    if(db){
+      document.querySelectorAll('.btn-check').forEach(b => b.disabled = false);
+      const scratchBtn = document.getElementById('btn-scratch');
+      if(scratchBtn) scratchBtn.disabled = false;
+    }
+  }
+}
+
+function shuffleCases(){
+  saveProgress();
+  for(let i = caseOrder.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [caseOrder[i], caseOrder[j]] = [caseOrder[j], caseOrder[i]];
+  }
+  saveProgress();
+  buildCaseList();
+  loadProgress();
+  applyInputLockState();
+}
+
+function resetProgress(){
+  const ok = confirm('Reset all progress? This clears your score, solved questions, and typed answers. This cannot be undone.');
+  if(!ok) return;
+
+  score = 0;
+  solved = new Array(TEST_CASES.length).fill(false);
+  wrongAttempts = new Array(TEST_CASES.length).fill(false);
+  caseOrder = TEST_CASES.map((tc, idx) => idx);
+  localStorage.removeItem('registrarProgress');
+  localStorage.removeItem('timedMode');
+  timedMode = null;
+  clearInterval(timerInterval);
+
+  buildCaseList();
+  updateScore();
+  applyInputLockState();
+
+  document.getElementById('timerControls').classList.remove('hidden');
+  document.getElementById('timerActive').classList.add('hidden');
+  document.getElementById('timerActive').innerHTML =
+    '<span id="timerDisplay" class="timer-display">45:00</span> <button class="btn-hint btn-timerctl" onclick="endTimedMode()">END NOW</button>';
+}
+
+function formatTime(ms){
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function startTimedMode(){
+  const mins = parseInt(document.getElementById('timerMinutes').value, 10) || 45;
+  timedMode = { endTime: Date.now() + mins * 60000, active: true };
+  localStorage.setItem('timedMode', JSON.stringify(timedMode));
+  document.getElementById('timerControls').classList.add('hidden');
+  document.getElementById('timerActive').classList.remove('hidden');
+  applyInputLockState();
+  runTimer();
+}
+
+function runTimer(){
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if(!timedMode || !timedMode.active){ clearInterval(timerInterval); return; }
+    const remaining = timedMode.endTime - Date.now();
+    if(remaining <= 0){
+      clearInterval(timerInterval);
+      finishTimedMode();
+      return;
+    }
+    const el = document.getElementById('timerDisplay');
+    if(el) el.textContent = formatTime(remaining);
+  }, 1000);
+}
+
+function endTimedMode(){
+  finishTimedMode();
+}
+
+function finishTimedMode(){
+  if(timedMode){
+    timedMode.active = false;
+    localStorage.setItem('timedMode', JSON.stringify(timedMode));
+  }
+  clearInterval(timerInterval);
+  applyInputLockState();
+  const totalPoints = TEST_CASES.reduce((a, c) => a + c.points, 0);
+  const activeBar = document.getElementById('timerActive');
+  activeBar.classList.remove('hidden');
+  activeBar.innerHTML = `<span class="timer-display">Time's up! Final score: ${score} / ${totalPoints}</span> <button class="btn-hint btn-timerctl" onclick="exitTimedMode()">EXIT TIMED MODE</button>`;
+}
+
+function exitTimedMode(){
+  timedMode = null;
+  localStorage.removeItem('timedMode');
+  applyInputLockState();
+  document.getElementById('timerControls').classList.remove('hidden');
+  document.getElementById('timerActive').classList.add('hidden');
+  document.getElementById('timerActive').innerHTML =
+    '<span id="timerDisplay" class="timer-display">45:00</span> <button class="btn-hint btn-timerctl" onclick="endTimedMode()">END NOW</button>';
+}
+
+function resumeTimedModeIfAny(){
+  try {
+    const raw = localStorage.getItem('timedMode');
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(!saved || !saved.active) return;
+    const remaining = saved.endTime - Date.now();
+    if(remaining <= 0){
+      timedMode = saved;
+      finishTimedMode();
+      return;
+    }
+    timedMode = saved;
+    document.getElementById('timerControls').classList.add('hidden');
+    document.getElementById('timerActive').classList.remove('hidden');
+    applyInputLockState();
+    runTimer();
   } catch(e){}
 }
 
@@ -767,7 +970,7 @@ function boot(){
       const statusEl = document.getElementById('dbStatus');
       statusEl.textContent = 'University database loaded — 10 tables, ready for query.';
       statusEl.className = 'ready';
-      document.querySelectorAll('.btn-check').forEach(b => b.disabled = false);
+      applyInputLockState();
       buildSchemaView();
     } catch(err){
       const statusEl = document.getElementById('dbStatus');
@@ -793,11 +996,19 @@ function initScratchGutter(){
   updateGutter();
   ta.addEventListener('input', updateGutter);
   ta.addEventListener('scroll', () => { gutter.scrollTop = ta.scrollTop; });
+  ta.addEventListener('keydown', (evt) => {
+    if((evt.ctrlKey || evt.metaKey) && evt.key === 'Enter'){
+      evt.preventDefault();
+      const btn = document.getElementById('btn-scratch');
+      if(!btn.disabled) runScratch();
+    }
+  });
 }
 
 buildCaseList();
 initScratchGutter();
 loadProgress();
+resumeTimedModeIfAny();
 boot();
 
 try {
