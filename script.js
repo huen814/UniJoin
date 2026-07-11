@@ -241,63 +241,63 @@ const TEST_CASES = [
 {
   tag: "TEST CASE 1",
   points: 5,
-  narrative: "Registrar analyst Mei Lin needs a quick catalog view: for courses 1 through 5, return <b>course_code, course_title, program_name</b> by joining Courses to Programs.",
+  narrative: "Registrar analyst Sua needs a quick catalog view: for courses 1 through 5, return <b>course_code, course_title, program_name</b> by joining Courses to Programs.",
   starter: "SELECT co.course_code, co.course_title, p.program_name\nFROM Courses co\nJOIN Programs p ON co.program_id = p.program_id\nWHERE co.course_id BETWEEN 1 AND 5\nORDER BY co.course_id;",
   expected: {"columns": ["course_code", "course_title", "program_name"], "rows": [["CS101", "Intro to Programming", "BS Computer Science"], ["CS102", "Data Structures", "BS Computer Science"], ["CS201", "Database Systems", "BS Computer Science"], ["CE101", "Statics of Rigid Bodies", "BS Civil Engineering"], ["CE102", "Surveying", "BS Civil Engineering"]]}
 },
 {
   tag: "TEST CASE 2",
   points: 5,
-  narrative: "One student record has <b>never</b> touched an enrollment table \u2014 Mei Lin wants to flag it before the semester audit. Return <b>student_id, first_name, last_name</b> for every student with no matching row in Enrollment.",
+  narrative: "One student record has <b>never</b> touched an enrollment table \u2014 Mizuki wants to flag it before the semester audit. Return <b>student_id, first_name, last_name</b> for every student with no matching row in Enrollment.",
   starter: "SELECT s.student_id, s.first_name, s.last_name\nFROM Students s\nLEFT JOIN Enrollment e ON s.student_id = e.student_id\nWHERE e.enrollment_id IS NULL;",
   expected: {"columns": ["student_id", "first_name", "last_name"], "rows": [[20, "Trisha", "Roxas"]]}
 },
 {
   tag: "TEST CASE 3",
   points: 5,
-  narrative: "Mei Lin is building a quick roster for enrollment records 1 through 3: the enrollment_id, the student's first name, and the section they're in \u2014 pulled together from <b>three</b> separate tables.",
+  narrative: "Huen is building a quick roster for enrollment records 1 through 3: the enrollment_id, the student's first name, and the section they're in \u2014 pulled together from <b>three</b> separate tables.",
   starter: "SELECT e.enrollment_id, st.first_name, se.section_name\nFROM Enrollment e\nJOIN Students st ON e.student_id = st.student_id\nJOIN Sections se ON e.section_id = se.section_id\nWHERE e.enrollment_id BETWEEN 1 AND 3\nORDER BY e.enrollment_id;",
   expected: {"columns": ["enrollment_id", "first_name", "section_name"], "rows": [[1, "Juan", "A"], [2, "Maria", "A"], [3, "Pedro", "A"]]}
 },
 {
   tag: "TEST CASE 4",
   points: 5,
-  narrative: "For sections 1 through 5, Mei Lin wants a capacity check \u2014 <b>every</b> section should show up whether or not anyone has enrolled in it yet. Return <b>section_id, enrollment_id</b> (NULL where nobody's enrolled).",
+  narrative: "For sections 1 through 5, Clementine wants a capacity check \u2014 <b>every</b> section should show up whether or not anyone has enrolled in it yet. Return <b>section_id, enrollment_id</b> (NULL where nobody's enrolled).",
   starter: "SELECT se.section_id, e.enrollment_id\nFROM Sections se\nLEFT JOIN Enrollment e ON se.section_id = e.section_id\nWHERE se.section_id BETWEEN 1 AND 5\nORDER BY se.section_id, e.enrollment_id;",
   expected: {"columns": ["section_id", "enrollment_id"], "rows": [[1, 1], [1, 2], [1, 3], [2, null], [3, 4], [4, 5], [4, 6], [5, 7], [5, 8]]}
 },
 {
   tag: "TEST CASE 5",
   points: 5,
-  narrative: "To show a new clerk exactly why forgetting the <b>ON</b> clause is dangerous, Mei Lin wants a deliberate, unfiltered pairing: every one of students 1, 2, 3 matched against every one of courses 1, 2, 3 \u2014 a plain cross join, no join condition at all (3 \u00d7 3 = 9 rows). Return <b>first_name, course_title</b>.",
+  narrative: "To show a new clerk exactly why forgetting the <b>ON</b> clause is dangerous, Snow wants a deliberate, unfiltered pairing: every one of students 1, 2, 3 matched against every one of courses 1, 2, 3 \u2014 a plain cross join, no join condition at all (3 \u00d7 3 = 9 rows). Return <b>first_name, course_title</b>.",
   starter: "SELECT st.first_name, co.course_title\nFROM Students st\nCROSS JOIN Courses co\nWHERE st.student_id IN (1,2,3) AND co.course_id IN (1,2,3)\nORDER BY st.student_id, co.course_id;",
   expected: {"columns": ["first_name", "course_title"], "rows": [["Juan", "Intro to Programming"], ["Juan", "Data Structures"], ["Juan", "Database Systems"], ["Maria", "Intro to Programming"], ["Maria", "Data Structures"], ["Maria", "Database Systems"], ["Pedro", "Intro to Programming"], ["Pedro", "Data Structures"], ["Pedro", "Database Systems"]]}
 },
 {
   tag: "TEST CASE 6",
   points: 5,
-  narrative: "Mei Lin suspects certain instructor ranks are understaffed. <b>Self-join</b> Instructors to itself to pair up instructors who share the same rank \u2014 no instructor paired with themselves, and no reversed duplicate pairs. Return <b>the two instructor names and the shared rank</b>, limited to the first 5 pairs ordered by both instructor_ids.",
+  narrative: "Varka suspects certain instructor ranks are understaffed. <b>Self-join</b> Instructors to itself to pair up instructors who share the same rank \u2014 no instructor paired with themselves, and no reversed duplicate pairs. Return <b>the two instructor names and the shared rank</b>, limited to the first 5 pairs ordered by both instructor_ids.",
   starter: "SELECT i1.instructor_name, i2.instructor_name, i1.rank\nFROM Instructors i1\nJOIN Instructors i2\n  ON i1.rank = i2.rank\n  AND i1.instructor_id < i2.instructor_id\nORDER BY i1.instructor_id, i2.instructor_id\nLIMIT 5;",
   expected: {"columns": ["instructor_name", "instructor_name", "rank"], "rows": [["Dr. Alan Reyes", "Dr. James Tan", "Professor"], ["Dr. Alan Reyes", "Dr. Miguel Torres", "Professor"], ["Dr. Alan Reyes", "Dr. Sophia Reyes", "Professor"], ["Dr. Alan Reyes", "Dr. Grace Manalo", "Professor"], ["Prof. Maria Lopez", "Prof. Elena Cruz", "Associate Professor"]]}
 },
 {
   tag: "TEST CASE 7",
   points: 5,
-  narrative: "For grade records 1 through 3, Mei Lin wants the full academic trail: course title, final grade, and remarks \u2014 walking from Grades, through Enrollment and Sections, to Courses.",
+  narrative: "For grade records 1 through 3, Dan Heng wants the full academic trail: course title, final grade, and remarks \u2014 walking from Grades, through Enrollment and Sections, to Courses.",
   starter: "SELECT co.course_title, g.final_grade, g.remarks\nFROM Grades g\nJOIN Enrollment e ON g.enrollment_id = e.enrollment_id\nJOIN Sections se ON e.section_id = se.section_id\nJOIN Courses co ON se.course_id = co.course_id\nWHERE g.enrollment_id BETWEEN 1 AND 3\nORDER BY g.enrollment_id;",
   expected: {"columns": ["course_title", "final_grade", "remarks"], "rows": [["Intro to Programming", 89, "Passed"], ["Intro to Programming", 76.5, "Passed"], ["Intro to Programming", 57.5, "Failed"]]}
 },
 {
   tag: "TEST CASE 8",
   points: 5,
-  narrative: "Students 1 through 3 each have multiple Enrollment rows, and a careless join would repeat them. Mei Lin only wants each student's <b>student_id, semester</b> to appear <b>once</b>, even though the underlying join produces duplicates.",
+  narrative: "Students 1 through 3 each have multiple Enrollment rows, and a careless join would repeat them. Louise only wants each student's <b>student_id, semester</b> to appear <b>once</b>, even though the underlying join produces duplicates.",
   starter: "SELECT DISTINCT st.student_id, e.semester\nFROM Students st\nJOIN Enrollment e ON st.student_id = e.student_id\nWHERE st.student_id IN (1,2,3)\nORDER BY st.student_id;",
   expected: {"columns": ["student_id", "semester"], "rows": [[1, "1st Semester"], [2, "1st Semester"], [3, "1st Semester"]]}
 },
 {
   tag: "TEST CASE 9",
   points: 5,
-  narrative: "For programs 1 through 5, Mei Lin wants a per-program course count \u2014 <b>every</b> program should appear, even one with very few courses on file. Return <b>program_name, course_count</b>.",
+  narrative: "For programs 1 through 5, Francis wants a per-program course count \u2014 <b>every</b> program should appear, even one with very few courses on file. Return <b>program_name, course_count</b>.",
   starter: "SELECT p.program_name, COUNT(co.course_id) AS course_count\nFROM Programs p\nLEFT JOIN Courses co ON p.program_id = co.program_id\nWHERE p.program_id BETWEEN 1 AND 5\nGROUP BY p.program_id\nORDER BY p.program_id;",
   expected: {"columns": ["program_name", "course_count"], "rows": [["BS Computer Science", 3], ["BS Civil Engineering", 2], ["BS Psychology", 2], ["BA Communication", 1], ["BS Accountancy", 2]]}
 },
@@ -311,63 +311,63 @@ const TEST_CASES = [
 {
   tag: "TEST CASE 11",
   points: 5,
-  narrative: "Mei Lin wants a grade summary for sections 1, 4, and 5: the course title and the <b>average final_grade</b> (rounded to 2 decimal places), grouped by course.",
+  narrative: "Alex wants a grade summary for sections 1, 4, and 5: the course title and the <b>average final_grade</b> (rounded to 2 decimal places), grouped by course.",
   starter: "SELECT co.course_title, ROUND(AVG(g.final_grade), 2) AS avg_grade\nFROM Grades g\nJOIN Enrollment e ON g.enrollment_id = e.enrollment_id\nJOIN Sections se ON e.section_id = se.section_id\nJOIN Courses co ON se.course_id = co.course_id\nWHERE se.section_id IN (1,4,5)\nGROUP BY co.course_id\nORDER BY co.course_id;",
   expected: {"columns": ["course_title", "avg_grade"], "rows": [["Intro to Programming", 74.33], ["Database Systems", 76.75], ["Statics of Rigid Bodies", 79.0]]}
 },
 {
   tag: "TEST CASE 12",
   points: 5,
-  narrative: "Mei Lin needs to find sections that are actually filling up. Return <b>section_id, enrolled</b> (a count of enrollment rows) for every section with <b>more than one</b> enrolled student, using <b>GROUP BY</b> and <b>HAVING</b>.",
+  narrative: "Cherry needs to find sections that are actually filling up. Return <b>section_id, enrolled</b> (a count of enrollment rows) for every section with <b>more than one</b> enrolled student, using <b>GROUP BY</b> and <b>HAVING</b>.",
   starter: "SELECT se.section_id, COUNT(e.enrollment_id) AS enrolled\nFROM Sections se\nJOIN Enrollment e ON se.section_id = e.section_id\nGROUP BY se.section_id\nHAVING COUNT(e.enrollment_id) > 1\nORDER BY se.section_id;",
   expected: {"columns": ["section_id", "enrolled"], "rows": [[1, 3], [4, 2], [5, 2], [7, 2], [9, 2], [11, 2], [15, 2], [16, 2]]}
 },
 {
   tag: "TEST CASE 13",
   points: 5,
-  narrative: "Using a <b>subquery</b>, Mei Lin wants to flag the students who paid <b>more</b> than the average payment amount across the whole university. Return <b>first_name, last_name, amount</b>, ordered by amount descending.",
+  narrative: "Using a <b>subquery</b>, Lin wants to flag the students who paid <b>more</b> than the average payment amount across the whole university. Return <b>first_name, last_name, amount</b>, ordered by amount descending.",
   starter: "SELECT s.first_name, s.last_name, p.amount\nFROM Payments p\nJOIN Students s ON p.student_id = s.student_id\nWHERE p.amount > (SELECT AVG(amount) FROM Payments)\nORDER BY p.amount DESC, s.student_id;",
   expected: {"columns": ["first_name", "last_name", "amount"], "rows": [["Juan", "Dela Cruz", 15000], ["Maria", "Santos", 15000], ["Ana", "Garcia", 15000], ["Liza", "Torres", 15000], ["Grace", "Bautista", 15000], ["Paolo", "Cruz", 15000], ["Nina", "Aquino", 15000], ["Ella", "Fernandez", 15000]]}
 },
 {
   tag: "TEST CASE 14",
   points: 5,
-  narrative: "Mei Lin is auditing tuition payments made by students enrolled in <b>BS Computer Science</b> (program_id 1). Chain Students through Enrollment, Sections, and Courses to Payments, and return <b>first_name, last_name, amount</b>.",
+  narrative: "Mei is auditing tuition payments made by students enrolled in <b>BS Computer Science</b> (program_id 1). Chain Students through Enrollment, Sections, and Courses to Payments, and return <b>first_name, last_name, amount</b>.",
   starter: "SELECT s.first_name, s.last_name, py.amount\nFROM Students s\nJOIN Enrollment e ON s.student_id = e.student_id\nJOIN Sections se ON e.section_id = se.section_id\nJOIN Courses co ON se.course_id = co.course_id\nJOIN Payments py ON py.student_id = s.student_id\nWHERE co.program_id = 1\nORDER BY s.student_id;",
   expected: {"columns": ["first_name", "last_name", "amount"], "rows": [["Juan", "Dela Cruz", 15000], ["Juan", "Dela Cruz", 15000], ["Maria", "Santos", 15000], ["Pedro", "Reyes", 12000], ["Ana", "Garcia", 15000], ["Jose", "Ramos", 10000]]}
 },
 {
   tag: "TEST CASE 15",
   points: 5,
-  narrative: "For enrollment records 1 through 5, Mei Lin wants an attendance tally \u2014 <b>every</b> enrollment should show up even if no attendance has been logged yet. Return <b>enrollment_id, days_logged</b> (a count of ClassAttendance rows).",
+  narrative: "For enrollment records 1 through 5, Maomao wants an attendance tally \u2014 <b>every</b> enrollment should show up even if no attendance has been logged yet. Return <b>enrollment_id, days_logged</b> (a count of ClassAttendance rows).",
   starter: "SELECT e.enrollment_id, COUNT(ca.attendance_id) AS days_logged\nFROM Enrollment e\nLEFT JOIN ClassAttendance ca ON e.enrollment_id = ca.enrollment_id\nWHERE e.enrollment_id BETWEEN 1 AND 5\nGROUP BY e.enrollment_id\nORDER BY e.enrollment_id;",
   expected: {"columns": ["enrollment_id", "days_logged"], "rows": [[1, 3], [2, 2], [3, 2], [4, 1], [5, 2]]}
 },
 {
   tag: "TEST CASE 16",
   points: 5,
-  narrative: "Mei Lin wants a college-level overview: <b>college_name, program_count</b> for every college, including any college that happens to offer very few programs.",
+  narrative: "Akito wants a college-level overview: <b>college_name, program_count</b> for every college, including any college that happens to offer very few programs.",
   starter: "SELECT c.college_name, COUNT(p.program_id) AS program_count\nFROM Colleges c\nLEFT JOIN Programs p ON c.college_id = p.college_id\nGROUP BY c.college_id\nORDER BY c.college_id;",
   expected: {"columns": ["college_name", "program_count"], "rows": [["College of Engineering", 2], ["College of Arts and Sciences", 2], ["College of Business", 2], ["College of Education", 1], ["College of Nursing", 1]]}
 },
 {
   tag: "TEST CASE 17",
   points: 5,
-  narrative: "For students 1 and 2, Mei Lin wants the full academic path: first_name, course_code, and program_name \u2014 chained across Enrollment, Sections, Courses, and Programs, a <b>four-table</b> join.",
+  narrative: "For students 1 and 2, An wants the full academic path: first_name, course_code, and program_name \u2014 chained across Enrollment, Sections, Courses, and Programs, a <b>four-table</b> join.",
   starter: "SELECT st.first_name, co.course_code, p.program_name\nFROM Students st\nJOIN Enrollment e ON st.student_id = e.student_id\nJOIN Sections se ON e.section_id = se.section_id\nJOIN Courses co ON se.course_id = co.course_id\nJOIN Programs p ON co.program_id = p.program_id\nWHERE st.student_id IN (1,2)\nORDER BY st.student_id, co.course_id;",
   expected: {"columns": ["first_name", "course_code", "program_name"], "rows": [["Juan", "CS101", "BS Computer Science"], ["Juan", "CS201", "BS Computer Science"], ["Maria", "CS101", "BS Computer Science"], ["Maria", "PSY102", "BS Psychology"]]}
 },
 {
   tag: "TEST CASE 18",
   points: 5,
-  narrative: "Mei Lin needs a list of students who have <b>no payment record at all</b> on file \u2014 an anti-join between Students and Payments. Return <b>student_id, first_name, last_name</b>.",
+  narrative: "Nicole needs a list of students who have <b>no payment record at all</b> on file \u2014 an anti-join between Students and Payments. Return <b>student_id, first_name, last_name</b>.",
   starter: "SELECT s.student_id, s.first_name, s.last_name\nFROM Students s\nLEFT JOIN Payments p ON s.student_id = p.student_id\nWHERE p.payment_id IS NULL\nORDER BY s.student_id;",
   expected: {"columns": ["student_id", "first_name", "last_name"], "rows": [[7, "Mark", "Villanueva"], [11, "Carlo", "Mendoza"], [13, "Rafael", "Gonzales"], [14, "Sofia", "Navarro"], [15, "Diego", "Castillo"], [16, "Camille", "Ocampo"], [17, "Miguel", "Salazar"], [18, "Isabel", "Pascual"], [19, "Gabriel", "Domingo"], [20, "Trisha", "Roxas"]]}
 },
 {
   tag: "TEST CASE 19",
   points: 5,
-  narrative: "For the Dean's List shortlist, Mei Lin wants the <b>top 3</b> highest final_grade records university-wide. Return <b>first_name, last_name, final_grade</b>, ordered highest first.",
+  narrative: "For the Dean's List shortlist, Darren wants the <b>top 3</b> highest final_grade records university-wide. Return <b>first_name, last_name, final_grade</b>, ordered highest first.",
   starter: "SELECT st.first_name, st.last_name, g.final_grade\nFROM Grades g\nJOIN Enrollment e ON g.enrollment_id = e.enrollment_id\nJOIN Students st ON e.student_id = st.student_id\nORDER BY g.final_grade DESC\nLIMIT 3;",
   expected: {"columns": ["first_name", "last_name", "final_grade"], "rows": [["Mark", "Villanueva", 95.5], ["Ana", "Garcia", 93], ["Ella", "Fernandez", 91]]}
 },
