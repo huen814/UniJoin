@@ -49,6 +49,8 @@
 
   .tabbar{
     display:flex; gap:2px; max-width:1280px; margin:0 auto; padding:16px 26px 0;
+    position:sticky; top:0; z-index:45; background:var(--navy);
+    border-bottom:2px dashed var(--wire);
   }
   .tab-btn{
     background:var(--panel); color:#9caec9; border:1px solid var(--wire); border-bottom:none;
@@ -115,7 +117,7 @@
   }
   .scratch-editor .editor{ min-height:220px; }
   .scratch-editor textarea.sqlbox{ min-height:220px; }
-  .scratch-console{ position:sticky; top:96px; max-height:calc(100vh - 120px); }
+  .scratch-console{ position:sticky; top:170px; max-height:calc(100vh - 190px); }
   @media (max-width: 900px){
     .scratch-wrap{grid-template-columns:1fr;}
     .scratch-console{position:static !important;}
@@ -200,7 +202,7 @@
 
   .console{
     background:var(--panel); border:1px solid var(--wire); border-radius:6px;
-    padding:20px; position:sticky; top:96px; max-height:calc(100vh - 120px); overflow-y:auto;
+    padding:20px; position:sticky; top:170px; max-height:calc(100vh - 190px); overflow-y:auto;
   }
   .console h3{
     font-family:'Special Elite', monospace; font-size:0.9rem; color:var(--gold);
