@@ -396,10 +396,13 @@ function buildCaseList(){
       <div class="narrative">${tc.narrative}</div>
       <div class="editor">
         <div class="gutter" id="gutter-${idx}">1</div>
-        <textarea class="sqlbox" id="sql-${idx}" spellcheck="false"></textarea>
+        <textarea class="sqlbox" id="sql-${idx}" spellcheck="false" placeholder="-- write your query here"></textarea>
       </div>
       <div class="card-actions">
-        <button class="btn-check" id="btn-${idx}" onclick="checkCase(${idx})" disabled>CHECK CODE</button>
+        <div class="btn-group">
+          <button class="btn-check" id="btn-${idx}" onclick="checkCase(${idx})" disabled>CHECK CODE</button>
+          <button class="btn-hint" id="hintbtn-${idx}" onclick="toggleHint(${idx})">HINT</button>
+        </div>
         <span class="status-pill" id="pill-${idx}"></span>
       </div>
     </div>
@@ -415,9 +418,36 @@ function buildCaseList(){
       gutter.textContent = nums.trim('\n');
     };
     updateGutter();
-    ta.addEventListener('input', updateGutter);
+    ta.addEventListener('input', () => { updateGutter(); saveProgress(); });
     ta.addEventListener('scroll', () => { gutter.scrollTop = ta.scrollTop; });
   });
+}
+
+function toggleHint(idx){
+  const ta = document.getElementById('sql-'+idx);
+  const btn = document.getElementById('hintbtn-'+idx);
+  const checkBtn = document.getElementById('btn-'+idx);
+  const showingHint = ta.dataset.hintShown === '1';
+
+  if(showingHint){
+    ta.value = ta.dataset.userAnswer || '';
+    ta.readOnly = false;
+    ta.classList.remove('hint-active');
+    ta.dataset.hintShown = '0';
+    btn.textContent = 'HINT';
+    btn.classList.remove('on');
+    if(db) checkBtn.disabled = false;
+  } else {
+    ta.dataset.userAnswer = ta.value;
+    ta.value = TEST_CASES[idx].starter;
+    ta.readOnly = true;
+    ta.classList.add('hint-active');
+    ta.dataset.hintShown = '1';
+    btn.textContent = 'BACK TO MY ANSWER';
+    btn.classList.add('on');
+    checkBtn.disabled = true;
+  }
+  ta.dispatchEvent(new Event('input'));
 }
 
 function normalizeRows(rows){
@@ -449,14 +479,17 @@ function renderTable(columns, rows){
 
 function updateScore(){
   document.getElementById('scoreVal').textContent = score + ' / 100';
+  const solvedCount = solved.filter(Boolean).length;
+  const pct = Math.round((solvedCount / TEST_CASES.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = solvedCount + ' / ' + TEST_CASES.length + ' solved';
 }
 
 function showView(name){
-  const isCases = name === 'cases';
-  document.getElementById('view-cases').classList.toggle('hidden', !isCases);
-  document.getElementById('view-schema').classList.toggle('hidden', isCases);
-  document.getElementById('tab-cases').classList.toggle('active', isCases);
-  document.getElementById('tab-schema').classList.toggle('active', !isCases);
+  ['cases','schema','scratchpad'].forEach(v => {
+    document.getElementById('view-'+v).classList.toggle('hidden', v !== name);
+    document.getElementById('tab-'+v).classList.toggle('active', v === name);
+  });
   try { localStorage.setItem('activeView', name); } catch(e){}
 }
 
@@ -586,6 +619,73 @@ function checkCase(idx){
     pill.textContent = 'INCORRECT';
     pill.className = 'status-pill fail';
   }
+  saveProgress();
+}
+
+function runScratch(){
+  const sql = document.getElementById('sql-scratch').value;
+  const resultPanel = document.getElementById('scratchResult');
+  const pill = document.getElementById('pill-scratch');
+
+  let result;
+  try {
+    result = db.exec(sql);
+  } catch(err){
+    resultPanel.innerHTML = `<div class="errBox">SQL ERROR:\n${esc(err.message)}</div>`;
+    pill.textContent = 'ERROR';
+    pill.className = 'status-pill fail';
+    return;
+  }
+
+  if(!result || result.length === 0){
+    resultPanel.innerHTML = `<p class="placeholder">Query ran with no result set returned (e.g. a statement other than SELECT).</p>`;
+    pill.textContent = '';
+    pill.className = 'status-pill';
+    return;
+  }
+
+  const { columns, values } = result[0];
+  resultPanel.innerHTML = renderTable(columns, values);
+  pill.textContent = 'RAN';
+  pill.className = 'status-pill pass';
+}
+
+function saveProgress(){
+  try {
+    const answers = TEST_CASES.map((tc, idx) => {
+      const ta = document.getElementById('sql-'+idx);
+      return ta.dataset.hintShown === '1' ? (ta.dataset.userAnswer || '') : ta.value;
+    });
+    const state = { score, solved, answers };
+    localStorage.setItem('registrarProgress', JSON.stringify(state));
+  } catch(e){}
+}
+
+function loadProgress(){
+  try {
+    const raw = localStorage.getItem('registrarProgress');
+    if(!raw) return;
+    const state = JSON.parse(raw);
+    if(!state || !Array.isArray(state.solved)) return;
+
+    score = state.score || 0;
+    solved = TEST_CASES.map((tc, idx) => !!state.solved[idx]);
+
+    TEST_CASES.forEach((tc, idx) => {
+      const ta = document.getElementById('sql-'+idx);
+      if(state.answers && state.answers[idx]){
+        ta.value = state.answers[idx];
+        ta.dispatchEvent(new Event('input'));
+      }
+      if(solved[idx]){
+        const pill = document.getElementById('pill-'+idx);
+        pill.textContent = 'VERIFIED';
+        pill.className = 'status-pill pass';
+      }
+    });
+
+    updateScore();
+  } catch(e){}
 }
 
 function boot(){
@@ -610,10 +710,26 @@ function boot(){
   });
 }
 
+function initScratchGutter(){
+  const ta = document.getElementById('sql-scratch');
+  const gutter = document.getElementById('gutter-scratch');
+  const updateGutter = () => {
+    const lines = ta.value.split('\n').length;
+    let nums = '';
+    for(let i=1;i<=lines;i++) nums += i + '\n';
+    gutter.textContent = nums.trim('\n');
+  };
+  updateGutter();
+  ta.addEventListener('input', updateGutter);
+  ta.addEventListener('scroll', () => { gutter.scrollTop = ta.scrollTop; });
+}
+
 buildCaseList();
+initScratchGutter();
+loadProgress();
 boot();
 
 try {
   const savedView = localStorage.getItem('activeView');
-  if(savedView === 'schema'){ showView('schema'); }
+  if(savedView === 'schema' || savedView === 'scratchpad'){ showView(savedView); }
 } catch(e){}
