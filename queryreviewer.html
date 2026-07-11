@@ -20,12 +20,17 @@
     <div class="sub"> Created to help review on Information Management II </div>
     <div id="dbStatus">Booting university database…</div>
   </div>
-  <div class="scoreBadge">SCORE<b id="scoreVal">0 / 100</b></div>
+  <div class="scoreBadge">
+    SCORE<b id="scoreVal">0 / 100</b>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 20 solved</div>
+  </div>
 </div>
 
 <div class="tabbar">
   <button class="tab-btn active" id="tab-cases" onclick="showView('cases')">TEST CASES</button>
   <button class="tab-btn" id="tab-schema" onclick="showView('schema')">DATABASE SCHEMA</button>
+  <button class="tab-btn" id="tab-scratchpad" onclick="showView('scratchpad')">SCRATCHPAD</button>
 </div>
 
 <div id="view-cases" class="view">
@@ -50,7 +55,28 @@
   <div id="schemaWrap"><p class="placeholder">Waiting for the database to finish loading…</p></div>
 </div>
 
-<div class="footer-note">20 test cases · 5 points each · every table lives in an in-browser SQLite database built from the university's actual academic records schema</div>
+<div id="view-scratchpad" class="view hidden">
+  <div class="scratch-wrap">
+    <div class="scratch-editor">
+      <h3>SCRATCHPAD</h3>
+      <div class="schema-sample-label" style="margin:0 0 10px;">Test any query you like against the live university database. Nothing here is scored.</div>
+      <div class="editor">
+        <div class="gutter" id="gutter-scratch">1</div>
+        <textarea class="sqlbox" id="sql-scratch" spellcheck="false" placeholder="-- write any query here, e.g. SELECT * FROM Students LIMIT 5;"></textarea>
+      </div>
+      <div class="card-actions">
+        <button class="btn-check" id="btn-scratch" onclick="runScratch()" disabled>RUN QUERY</button>
+        <span class="status-pill" id="pill-scratch"></span>
+      </div>
+    </div>
+    <div class="console scratch-console">
+      <h3>RESULT</h3>
+      <div id="scratchResult"><p class="placeholder">Run a query to see results here.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer-note">20 test cases · 5 points each · hints available · progress saved automatically · scratchpad for free-form queries · every table lives in an in-browser SQLite database built from the university's actual academic records schema</div>
 
 <script src="script.js" defer></script>
 </body>

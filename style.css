@@ -36,8 +36,16 @@
   .scoreBadge{
     background:var(--panel); border:1px solid var(--wire);
     padding:8px 18px; text-align:right; border-radius:3px; font-size:0.72rem; color:#c9d3e0;
+    min-width:170px;
   }
   .scoreBadge b{display:block; font-family:'Special Elite', monospace; font-size:1.5rem; color:var(--gold);}
+  .progress-track{
+    width:100%; height:6px; background:#0d1526; border-radius:4px; overflow:hidden; margin-top:8px;
+  }
+  .progress-fill{
+    height:100%; background:var(--gold); border-radius:4px; transition:width .3s ease;
+  }
+  .progress-label{ font-size:0.66rem; color:#9caec9; margin-top:5px; }
 
   .tabbar{
     display:flex; gap:2px; max-width:1280px; margin:0 auto; padding:16px 26px 0;
@@ -89,6 +97,30 @@
   table.sampleTbl td{ padding:3px 8px; border-bottom:1px solid var(--paper-dim); color:#4a4020; white-space:nowrap; }
   table.sampleTbl td.nullval{ color:#a89a6f; font-style:italic; }
 
+  .scratch-wrap{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:22px;
+    max-width:1280px;
+    margin:0 auto;
+    padding:22px 26px 40px;
+    align-items:start;
+  }
+  .scratch-editor{
+    background:var(--panel); border:1px solid var(--wire); border-radius:6px; padding:20px;
+  }
+  .scratch-editor h3{
+    font-family:'Special Elite', monospace; font-size:0.9rem; color:var(--gold);
+    margin:0 0 8px; letter-spacing:.5px; border-bottom:1px solid var(--wire); padding-bottom:6px;
+  }
+  .scratch-editor .editor{ min-height:220px; }
+  .scratch-editor textarea.sqlbox{ min-height:220px; }
+  .scratch-console{ position:sticky; top:96px; max-height:calc(100vh - 120px); }
+  @media (max-width: 900px){
+    .scratch-wrap{grid-template-columns:1fr;}
+    .scratch-console{position:static !important;}
+  }
+
   .layout{
     display:grid;
     grid-template-columns: 1fr 400px;
@@ -138,16 +170,28 @@
     font-family:'JetBrains Mono', monospace; font-size:0.85rem; line-height:1.55;
     padding:12px 14px; resize:vertical; min-height:70px;
   }
+  textarea.sqlbox::placeholder{ color:#4b5875; opacity:1; font-style:italic; }
+
+  textarea.sqlbox.hint-active{
+    background:#132038; color:#93a8cc; font-style:italic; cursor:not-allowed;
+  }
 
   .card-actions{
     display:flex; align-items:center; justify-content:space-between; margin-top:14px;
   }
+  .btn-group{ display:flex; gap:8px; }
   .btn-check{
     background:var(--gold); color:var(--navy); border:none; font-family:'Special Elite', monospace;
     font-size:0.85rem; padding:10px 20px; border-radius:3px; cursor:pointer; letter-spacing:.5px;
   }
   .btn-check:disabled{opacity:.5; cursor:not-allowed;}
   .btn-check:hover:not(:disabled){background:#dea25a;}
+  .btn-hint{
+    background:transparent; color:#6b5f45; border:1px solid #6b5f45; font-family:'Special Elite', monospace;
+    font-size:0.78rem; padding:9px 14px; border-radius:3px; cursor:pointer; letter-spacing:.5px;
+  }
+  .btn-hint:hover{ border-color:var(--seal); color:var(--seal); }
+  .btn-hint.on{ background:var(--seal); border-color:var(--seal); color:#fff; }
   .status-pill{
     font-size:0.72rem; padding:5px 12px; border-radius:12px; font-weight:700; display:none;
   }
