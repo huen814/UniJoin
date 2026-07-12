@@ -601,12 +601,22 @@ function updateScore(){
   document.getElementById('progressLabel').textContent = solvedCount + ' / ' + TEST_CASES.length + ' solved';
 }
 
+let tabScrollPositions = { cases: 0, schema: 0, scratchpad: 0 };
+let currentView = 'cases';
+
 function showView(name){
+  tabScrollPositions[currentView] = window.scrollY;
+
   ['cases','schema','scratchpad'].forEach(v => {
     document.getElementById('view-'+v).classList.toggle('hidden', v !== name);
     document.getElementById('tab-'+v).classList.toggle('active', v === name);
   });
   try { localStorage.setItem('activeView', name); } catch(e){}
+
+  currentView = name;
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: tabScrollPositions[name] || 0, left: 0, behavior: 'instant' });
+  });
 }
 
 function renderSchemaTable(columns, rows){
