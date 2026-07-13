@@ -4,6 +4,8 @@ Browser-based SQL practice tool made with a university enrollment database. No b
 
 Every query is executed through an actual SQLite engine running client-side. The test cases aren't multiple choice, just type the query and UniJoin runs it, and checks your query if it matches with the actual result.
 
+![UniJoin Main Page](webpage_screenshot.png)
+
 # Features
 - **30 test cases, 5 points each - 150 points total**.
 - Progress bar, scores, and in-progress answers across page reloads.
